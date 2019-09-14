@@ -62,17 +62,39 @@ end
 function Box:collidesWith(other)
     local distance = math.abs(math.sqrt(pow(other.x - self.x, 2) + pow(other.y - self.y, 2)))
     local d = self.w > self.h and self.w or self.h
-    self.collision.top = other.y + other.h >= self.y and distance < d
-    self.collision.left = other.x + other.w >= self.x and distance < d
-    self.collision.bottom = other.y <= self.y + self.h and distance < d
-    self.collision.right = other.x <= self.x + self.w and distance < d
+
+    self.collision.top = 
+        (self.y > other.y and self.y < other.y + other.h) and (
+            (self.x > other.x and self.x < other.x + other.w) or
+            (self.x + self.w > other.x and self.x + self.w < other.x + other.w)
+        )
+
+    self.collision.left = 
+        (self.x < other.x + other.w and self.x + self.w > other.x + other.w) and (
+            (self.y < other.y + other.h and self.y > other.y) or
+            (self.y + self.h > other.y and self.y + self.h < other.y + other.h)
+        )
+    
+    self.collision.bottom =
+        (self.y + self.h < other.y + other.h and self.y + self.h > other.y) and
+        (
+            (self.x < other.x + other.w and self.x > other.x) or
+            (self.x + self.w > other.x and self.x + self.w < other.x + other.w)
+        )
+
+    self.collision.right =
+        (self.x + self.w > other.x and self.x + self.w < other.x + other.h) and
+        (
+            (self.y < other.y + other.h and self.y > other.y) or
+            (self.y + self.h > other.y and self.y + self.h < other.y + other.h)
+        )
 end
 
 local boxA = Box:new(
-    WINDOW_WIDTH / 2, 
-    WINDOW_HEIGHT / 2, 
-    BOX_SIZE, 
-    BOX_SIZE, 
+    WINDOW_WIDTH / 2,
+    WINDOW_HEIGHT / 2,
+    BOX_SIZE,
+    BOX_SIZE,
     RED
 )
 local boxB = Box:new(
@@ -130,7 +152,7 @@ end
 
 function love.keypressed(key)
     if key == 'escape' then
-        --
+        love.event.quit()
     end
 end
 
