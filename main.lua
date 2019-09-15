@@ -1,8 +1,8 @@
 local WINDOW_WIDTH, WINDOW_HEIGHT = love.window.getMode()
 local BOX_SIZE = 100
 local SPEED = 150
-local RED = { 1, 0, 0, 1 }
-local GREEN = { 0, 1, 0, 1 }
+local RED = { 1, 0, 0, 0.5 }
+local GREEN = { 0, 1, 0, 0.5 }
 local BLUE = { 0, 0, 1, 1 }
 local WHITE = { 1, 1, 1, 1 }
 
@@ -60,33 +60,46 @@ function Box:stop()
 end
 
 function Box:collidesWith(other)
-    local distance = math.abs(math.sqrt(pow(other.x - self.x, 2) + pow(other.y - self.y, 2)))
-    local d = self.w > self.h and self.w or self.h
+    local minX = self.x
+    local maxX = self.x + self.w
+    local minY = self.y
+    local maxY = self.y + self.h
+    
+    local otherMinX = other.x
+    local otherMaxX = other.x + other.w
+    local otherMinY = other.y
+    local otherMaxY = other.y + other.h
 
     self.collision.top = 
-        (self.y > other.y and self.y < other.y + other.h) and (
-            (self.x > other.x and self.x < other.x + other.w) or
-            (self.x + self.w > other.x and self.x + self.w < other.x + other.w)
+        (minY > otherMinY and minY < otherMaxY)
+        and (
+            (minX > otherMinX and minX < otherMaxX) or
+            (maxX > otherMinX and maxX < otherMaxX) or
+            (minX < otherMinX and maxX > otherMaxX)
         )
 
     self.collision.left = 
-        (self.x < other.x + other.w and self.x + self.w > other.x + other.w) and (
-            (self.y < other.y + other.h and self.y > other.y) or
-            (self.y + self.h > other.y and self.y + self.h < other.y + other.h)
+        (otherMinX < minX and minX < otherMaxX)
+         and (
+            (minY < otherMinY and maxY > otherMaxY) or
+            (otherMinY < minY and minY < otherMaxY) or
+            (otherMinY < maxY and maxY < otherMaxY)
         )
     
     self.collision.bottom =
-        (self.y + self.h < other.y + other.h and self.y + self.h > other.y) and
-        (
-            (self.x < other.x + other.w and self.x > other.x) or
-            (self.x + self.w > other.x and self.x + self.w < other.x + other.w)
+        (otherMinY < maxY and otherMaxY > maxY)
+        and (
+            (otherMinX > minX and otherMaxX < maxX) or
+            (otherMinX < minX and otherMaxX > minX) or
+            (maxX > otherMinX and otherMaxX > maxX)
         )
 
     self.collision.right =
-        (self.x + self.w > other.x and self.x + self.w < other.x + other.h) and
-        (
-            (self.y < other.y + other.h and self.y > other.y) or
-            (self.y + self.h > other.y and self.y + self.h < other.y + other.h)
+        (otherMinX < maxX and otherMaxX > maxX)
+        and (
+            (minY < otherMinY and maxY > otherMaxY) or
+            (otherMinY < minY and minY < otherMaxY) or
+            (otherMinY < maxY and maxY < otherMaxY)
         )
 end
 
@@ -139,12 +152,8 @@ function love.update(dt)
         boxB.dx = SPEED
     end
 
-    -- if boxA:collidesWith(boxB) then
-    --     boxA.edgeColor = { 0, 0, 1, 1 }
-    -- else 
-    --     boxA.edgeColor = WHITE
-    -- end
     boxA:collidesWith(boxB)
+    boxB:collidesWith(boxA)
 
     boxA:update(dt)
     boxB:update(dt)
@@ -153,6 +162,18 @@ end
 function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
+    elseif key == 'r' then
+        boxA.w = boxA.w + 10
+        boxA.h = boxA.h + 10
+    elseif key == 'f' then
+        boxA.w = boxA.w - 10
+        boxA.h = boxA.h - 10
+    elseif key == 'o' then
+        boxB.w = boxB.w + 10
+        boxB.h = boxB.h + 10
+    elseif key == 'l' then
+        boxB.w = boxB.w - 10
+        boxB.h = boxB.h - 10
     end
 end
 
