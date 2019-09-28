@@ -4,6 +4,7 @@ local SPEED = 150
 local RED = { 1, 0, 0, 0.5 }
 local GREEN = { 0, 1, 0, 0.5 }
 local BLUE = { 0, 0, 1, 1 }
+local YELLOW = { 1, 1, 0, 1 }
 local WHITE = { 1, 1, 1, 1 }
 
 function pow(a, b)
@@ -24,9 +25,9 @@ function Box:new(x, y, w, h, color)
         dx = 0,
         dy = 0,
         color = color~= nil and color or { 0.5, 0.5, 0.5, 0.5 },
-        collision = { left = false, top = false, right = false, bottom = false },
+        collision = { left = false, top = false, right = false, bottom = false, x = 0, y = 0 },
         edgeColor = WHITE,
-        edgeWidth = 3
+        edgeThickness = 3
     }
     self.__index = self
     return setmetatable(box, Box)
@@ -37,16 +38,27 @@ function Box:render()
     love.graphics.rectangle('fill', self.x, self.y, self.w, self.h)
 
     love.graphics.setColor(self.collision.top and BLUE or self.edgeColor)
-    love.graphics.rectangle('fill', self.x, self.y, self.w, self.edgeWidth) -- top
+    love.graphics.rectangle('fill', self.x, self.y, self.w, self.edgeThickness) -- top
 
     love.graphics.setColor(self.collision.left and BLUE or self.edgeColor)
-    love.graphics.rectangle('fill', self.x, self.y, self.edgeWidth, self.h) -- left
+    love.graphics.rectangle('fill', self.x, self.y, self.edgeThickness, self.h) -- left
 
     love.graphics.setColor(self.collision.bottom and BLUE or self.edgeColor)
-    love.graphics.rectangle('fill', self.x, self.y + self.h - self.edgeWidth, self.w, self.edgeWidth) -- bottom
+    love.graphics.rectangle('fill', self.x, self.y + self.h - self.edgeThickness, self.w, self.edgeThickness) -- bottom
 
     love.graphics.setColor(self.collision.right and BLUE or self.edgeColor)
-    love.graphics.rectangle('fill', self.x + self.w - self.edgeWidth, self.y, self.edgeWidth, self.h) -- right
+    love.graphics.rectangle('fill', self.x + self.w - self.edgeThickness, self.y, self.edgeThickness, self.h) -- right
+
+    love.graphics.setColor(self.collision.top and YELLOW or self.edgeColor)
+    if self.collision.top then
+        love.graphics.rectangle('fill', self.collision.xStart, self.collision.yStart, self.collision.xEnd - self.collision.xStart, self.edgeThickness)
+    elseif self.collision.left then
+        love.graphics.rectangle('fill', self.collision.xStart , self.collision.yStart, self.edgeThickness, self.collision.yEnd - self.collision.yStart)
+    elseif self.collision.bottom then
+        --
+    else
+        --
+    end
 end
 
 function Box:update(dt)
@@ -73,34 +85,76 @@ function Box:collidesWith(other)
     self.collision.top = 
         (minY > otherMinY and minY < otherMaxY)
         and (
-            (minX > otherMinX and minX < otherMaxX) or
-            (maxX > otherMinX and maxX < otherMaxX) or
-            (minX < otherMinX and maxX > otherMaxX)
+            (minX > otherMinX and minX < otherMaxX) or -- other is colliding from the left side
+            (maxX > otherMinX and maxX < otherMaxX) or -- other is colliding from the right side
+            (minX < otherMinX and maxX > otherMaxX) -- other is colliding from the top and has smaller width
         )
 
     self.collision.left = 
         (otherMinX < minX and minX < otherMaxX)
          and (
-            (minY < otherMinY and maxY > otherMaxY) or
-            (otherMinY < minY and minY < otherMaxY) or
-            (otherMinY < maxY and maxY < otherMaxY)
+            (minY < otherMinY and maxY > otherMaxY) or -- other is colliding from the left and has smaller height
+            (minY > otherMinY and minY < otherMaxY) or -- other is colliding from the top
+            (maxY > otherMinY and maxY < otherMaxY) -- other is colliding from the bottom
         )
     
     self.collision.bottom =
         (otherMinY < maxY and otherMaxY > maxY)
         and (
-            (otherMinX > minX and otherMaxX < maxX) or
-            (otherMinX < minX and otherMaxX > minX) or
-            (maxX > otherMinX and otherMaxX > maxX)
+            (minX < otherMinX and maxX > otherMaxX) or -- other is colliding from the bottom and has smaller width
+            (minX > otherMinX and minX < otherMaxX) or -- other is colliding from the right side
+            (maxX > otherMinX and maxX < otherMaxX) -- other is colliding from the left side
         )
 
     self.collision.right =
         (otherMinX < maxX and otherMaxX > maxX)
         and (
-            (minY < otherMinY and maxY > otherMaxY) or
-            (otherMinY < minY and minY < otherMaxY) or
-            (otherMinY < maxY and maxY < otherMaxY)
+            (minY < otherMinY and maxY > otherMaxY) or -- other is colliding from the right and has smaller height
+            (minY > otherMinY and minY < otherMaxY) or -- other is colliding from the top
+            (maxY > otherMinY and maxY < otherMaxY) -- other is colliding from the bottom
         )
+
+    if self.collision.top then
+        self.collision.yStart = minY
+        self.collision.yEnd = minY
+
+        if minX > otherMinX and minX < otherMaxX then
+            self.collision.xStart = minX
+            self.collision.xEnd = otherMaxX
+        elseif maxX > otherMinX and maxX < otherMaxX then -- right
+            self.collision.xStart = otherMinX
+            self.collision.xEnd = maxX
+        else -- bottom
+            self.collision.xStart = otherMinX
+            self.collision.xEnd = otherMaxX
+        end
+    end
+
+    -- problema: neste momento so' estou a suportar uma linha de colisao (edge) de cada vez
+
+    if self.collision.left then
+        self.collision.xStart = minX
+        self.collision.xEnd = minX
+
+        if minY < otherMinY and maxY > otherMaxY then
+            self.collision.yStart = otherMinY
+            self.collision.yEnd = otherMaxY
+        elseif minY > otherMinY and minY < otherMaxY then -- top
+            self.collision.yStart = minY
+            self.collision.yEnd = otherMaxY
+        else -- bottom
+            self.collision.yStart = maxY
+            self.collision.yEnd = otherMinY
+        end
+    end
+
+    if self.collision.bottom then
+        -- TODO
+    end
+
+    if self.collision.right then
+        -- TODO
+    end
 end
 
 local boxA = Box:new(
