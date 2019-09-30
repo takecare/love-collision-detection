@@ -25,9 +25,18 @@ function Box:new(x, y, w, h, color)
         dx = 0,
         dy = 0,
         color = color~= nil and color or { 0.5, 0.5, 0.5, 0.5 },
-        collision = { left = false, top = false, right = false, bottom = false, x = 0, y = 0 },
+        collision = { 
+            left = { colliding = false },
+            top = { colliding = false },
+            right = { colliding = false },
+            bottom = { colliding = false }
+        },
+
+        collisions = {},
+
         edgeColor = WHITE,
-        edgeThickness = 3
+        edgeThickness = 3,
+        title = ''
     }
     self.__index = self
     return setmetatable(box, Box)
@@ -37,28 +46,33 @@ function Box:render()
     love.graphics.setColor(self.color)
     love.graphics.rectangle('fill', self.x, self.y, self.w, self.h)
 
-    love.graphics.setColor(self.collision.top and BLUE or self.edgeColor)
+    love.graphics.setColor(self.collision.top.colliding and BLUE or self.edgeColor)
     love.graphics.rectangle('fill', self.x, self.y, self.w, self.edgeThickness) -- top
 
-    love.graphics.setColor(self.collision.left and BLUE or self.edgeColor)
+    love.graphics.setColor(self.collision.left.colliding and BLUE or self.edgeColor)
     love.graphics.rectangle('fill', self.x, self.y, self.edgeThickness, self.h) -- left
 
-    love.graphics.setColor(self.collision.bottom and BLUE or self.edgeColor)
+    love.graphics.setColor(self.collision.bottom.colliding and BLUE or self.edgeColor)
     love.graphics.rectangle('fill', self.x, self.y + self.h - self.edgeThickness, self.w, self.edgeThickness) -- bottom
 
-    love.graphics.setColor(self.collision.right and BLUE or self.edgeColor)
+    love.graphics.setColor(self.collision.right.colliding and BLUE or self.edgeColor)
     love.graphics.rectangle('fill', self.x + self.w - self.edgeThickness, self.y, self.edgeThickness, self.h) -- right
 
-    love.graphics.setColor(self.collision.top and YELLOW or self.edgeColor)
-    if self.collision.top then
-        love.graphics.rectangle('fill', self.collision.xStart, self.collision.yStart, self.collision.xEnd - self.collision.xStart, self.edgeThickness)
-    elseif self.collision.left then
-        love.graphics.rectangle('fill', self.collision.xStart , self.collision.yStart, self.edgeThickness, self.collision.yEnd - self.collision.yStart)
-    elseif self.collision.bottom then
-        --
-    else
+    love.graphics.setColor(self.collision.top.colliding and YELLOW or self.edgeColor)
+    if self.collision.top.colliding then
+        love.graphics.rectangle('fill', self.collision.top.xStart, self.collision.top.yStart, self.collision.top.xEnd - self.collision.top.xStart, self.edgeThickness)
+    end
+    if self.collision.left.colliding then
+        love.graphics.rectangle('fill', self.collision.left.xStart , self.collision.left.yStart, self.edgeThickness, self.collision.left.yEnd - self.collision.left.yStart)
+    end
+    if self.collision.bottom.colliding then
         --
     end
+    if self.collision.right.colliding then
+        --
+    end
+
+    love.graphics.print(self.title, self.x + self.edgeThickness, self.y + self.edgeThickness)
 end
 
 function Box:update(dt)
@@ -82,7 +96,7 @@ function Box:collidesWith(other)
     local otherMinY = other.y
     local otherMaxY = other.y + other.h
 
-    self.collision.top = 
+    local collisionTop = 
         (minY > otherMinY and minY < otherMaxY)
         and (
             (minX > otherMinX and minX < otherMaxX) or -- other is colliding from the left side
@@ -90,7 +104,7 @@ function Box:collidesWith(other)
             (minX < otherMinX and maxX > otherMaxX) -- other is colliding from the top and has smaller width
         )
 
-    self.collision.left = 
+    local collisionLeft = 
         (otherMinX < minX and minX < otherMaxX)
          and (
             (minY < otherMinY and maxY > otherMaxY) or -- other is colliding from the left and has smaller height
@@ -98,7 +112,7 @@ function Box:collidesWith(other)
             (maxY > otherMinY and maxY < otherMaxY) -- other is colliding from the bottom
         )
     
-    self.collision.bottom =
+    local collisionBottom =
         (otherMinY < maxY and otherMaxY > maxY)
         and (
             (minX < otherMinX and maxX > otherMaxX) or -- other is colliding from the bottom and has smaller width
@@ -106,7 +120,7 @@ function Box:collidesWith(other)
             (maxX > otherMinX and maxX < otherMaxX) -- other is colliding from the left side
         )
 
-    self.collision.right =
+    local collisionRight =
         (otherMinX < maxX and otherMaxX > maxX)
         and (
             (minY < otherMinY and maxY > otherMaxY) or -- other is colliding from the right and has smaller height
@@ -114,45 +128,66 @@ function Box:collidesWith(other)
             (maxY > otherMinY and maxY < otherMaxY) -- other is colliding from the bottom
         )
 
-    if self.collision.top then
-        self.collision.yStart = minY
-        self.collision.yEnd = minY
+    self.collision.top.colliding = collisionTop
+    self.collision.right.colliding = collisionRight
+    self.collision.bottom.colliding = collisionBottom
+    self.collision.left.colliding = collisionLeft
 
-        if minX > otherMinX and minX < otherMaxX then
-            self.collision.xStart = minX
-            self.collision.xEnd = otherMaxX
+    if collisionTop then
+        self.collision.top.yStart = minY
+        self.collision.top.yEnd = minY
+
+        if minX < otherMinX and maxX > otherMaxX then  -- smaller width
+            self.collision.top.xStart = otherMinX
+            self.collision.top.xEnd = otherMaxX
+            self.title = 'Tsw'
+        elseif minX > otherMinX and maxX < otherMaxX then -- greater width
+            self.collision.top.xStart = minX
+            self.collision.top.xEnd = maxX
+            self.title = 'Tgw'
         elseif maxX > otherMinX and maxX < otherMaxX then -- right
-            self.collision.xStart = otherMinX
-            self.collision.xEnd = maxX
-        else -- bottom
-            self.collision.xStart = otherMinX
-            self.collision.xEnd = otherMaxX
+            self.collision.top.xStart = otherMinX
+            self.collision.top.xEnd = maxX
+            self.title = 'TR'
+        elseif minX > otherMinX and minX < otherMaxX then -- left
+            self.collision.top.xStart = minX
+            self.collision.top.xEnd = otherMaxX
+            self.title = 'TL'
+        else
+            self.title = ''
         end
     end
 
-    -- problema: neste momento so' estou a suportar uma linha de colisao (edge) de cada vez
+    if collisionLeft then
+        self.collision.left.xStart = minX
+        self.collision.left.xEnd = minX
 
-    if self.collision.left then
-        self.collision.xStart = minX
-        self.collision.xEnd = minX
-
-        if minY < otherMinY and maxY > otherMaxY then
-            self.collision.yStart = otherMinY
-            self.collision.yEnd = otherMaxY
+        if minY < otherMinY and maxY > otherMaxY then -- smaller height
+            self.collision.left.yStart = otherMinY
+            self.collision.left.yEnd = otherMaxY
+            self.title = 'Lsh'
+        elseif minY > otherMinY and maxY < otherMaxY then -- greater height
+            self.collision.left.yStart = minY
+            self.collision.left.yEnd = maxY
+            self.title = 'Lgh'
         elseif minY > otherMinY and minY < otherMaxY then -- top
-            self.collision.yStart = minY
-            self.collision.yEnd = otherMaxY
-        else -- bottom
-            self.collision.yStart = maxY
-            self.collision.yEnd = otherMinY
+            self.collision.left.yStart = minY
+            self.collision.left.yEnd = otherMaxY
+            self.title = 'LT'
+        elseif maxY > otherMinY and maxY < otherMaxY then -- bottom
+            self.collision.left.yStart = maxY
+            self.collision.left.yEnd = otherMinY
+            self.title = 'LB'
+        else
+            self.title = ''
         end
     end
 
-    if self.collision.bottom then
+    if collisionBottom then
         -- TODO
     end
 
-    if self.collision.right then
+    if collisionRight then
         -- TODO
     end
 end
