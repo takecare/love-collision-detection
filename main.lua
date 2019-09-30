@@ -1,3 +1,5 @@
+Collision = require 'Collision'
+
 local WINDOW_WIDTH, WINDOW_HEIGHT = love.window.getMode()
 local BOX_SIZE = 100
 local SPEED = 150
@@ -25,15 +27,12 @@ function Box:new(x, y, w, h, color)
         dx = 0,
         dy = 0,
         color = color~= nil and color or { 0.5, 0.5, 0.5, 0.5 },
-        collision = { 
-            left = { colliding = false },
-            top = { colliding = false },
-            right = { colliding = false },
-            bottom = { colliding = false }
+        collision = {
+            top = Collision:new(),
+            left = Collision:new(),
+            bottom = Collision:new(),
+            right = Collision:new()
         },
-
-        collisions = {},
-
         edgeColor = WHITE,
         edgeThickness = 3,
         title = ''
