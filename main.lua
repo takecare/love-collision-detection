@@ -62,10 +62,10 @@ function Box:render()
         love.graphics.rectangle('fill', self.collision.top.xStart, self.collision.top.yStart, self.collision.top.xEnd - self.collision.top.xStart, self.edgeThickness)
     end
     if self.collision.left.colliding then
-        love.graphics.rectangle('fill', self.collision.left.xStart , self.collision.left.yStart, self.edgeThickness, self.collision.left.yEnd - self.collision.left.yStart)
+        -- love.graphics.rectangle('fill', self.collision.left.xStart , self.collision.left.yStart, self.edgeThickness, self.collision.left.yEnd - self.collision.left.yStart)
     end
     if self.collision.bottom.colliding then
-        --
+        -- love.graphics.rectangle('fill', self.collision.bottom.xStart, self.collision.bottom.yStart, self.collision.bottom.xEnd - self.collision.bottom.xStart, self.edgeThickness)
     end
     if self.collision.right.colliding then
         --
@@ -144,14 +144,14 @@ function Box:collidesWith(other)
             self.collision.top.xStart = minX
             self.collision.top.xEnd = maxX
             self.title = 'Tgw'
-        elseif maxX > otherMinX and maxX < otherMaxX then -- right
-            self.collision.top.xStart = otherMinX
-            self.collision.top.xEnd = maxX
-            self.title = 'TR'
-        elseif minX > otherMinX and minX < otherMaxX then -- left
+        elseif minX < otherMaxX and minX > otherMinX then -- left
             self.collision.top.xStart = minX
             self.collision.top.xEnd = otherMaxX
             self.title = 'TL'
+        elseif maxX < otherMaxX and maxX > otherMinX then -- right
+            self.collision.top.xStart = otherMinX
+            self.collision.top.xEnd = maxX
+            self.title = 'TR'
         else
             self.title = ''
         end
@@ -183,7 +183,29 @@ function Box:collidesWith(other)
     end
 
     if collisionBottom then
-        -- TODO
+        self.collision.bottom.yStart = maxY
+        self.collision.bottom.yEnd = maxX
+
+        if minX < otherMinX and maxX > otherMaxX then  -- smaller width
+            self.collision.bottom.xStart = otherMinX
+            self.collision.bottom.xEnd = otherMaxX
+            self.title = 'Bsw'
+        elseif minX > otherMinX and maxX < otherMaxX then -- greater width
+            self.collision.bottom.xStart = minX
+            self.collision.bottom.xEnd = maxX
+            self.title = 'Bgw'
+        elseif minX < otherMaxX and minX > otherMinX then -- left
+            self.collision.bottom.xStart = otherMinX
+            self.collision.bottom.xEnd = maxX
+            self.title = 'BL'
+        elseif maxX < otherMaxX and maxX > otherMinX then -- right
+            self.collision.bottom.xStart = minX
+            self.collision.bottom.xEnd = otherMaxX
+            self.title = 'BR'
+        else
+            print('else')
+            self.title = ''
+        end
     end
 
     if collisionRight then
