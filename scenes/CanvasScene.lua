@@ -6,7 +6,8 @@ local plate
 local size
 local mode = 'paint'
 
-local CURSOR_COLOR = { 0.6, 0, 0, 0.8 }
+local CURSOR_COLOR_PAINT = { 0.6, 0, 0, 0.8 }
+local CURSOR_COLOR_CLEAN = { 0.2, 0.2, 0.5, 0.8 }
 local CURSOR_SCALE = 3
 
 local DecoratedCanvas = {}
@@ -29,10 +30,12 @@ end
 function CanvasScene:load(config)
     config.title = 'canvas'
     
-    canvas = love.graphics.newCanvas()
+    love.graphics.setColor(1, 1, 1, 1)
+
     plate = love.graphics.newImage('assets/plate128.png')
     brush = love.graphics.newImage('assets/brush8.png')
     size = plate:getWidth()
+    canvas = love.graphics.newCanvas(size, size)
 
     love.mouse.setVisible(false)
     love.mouse.setGrabbed(true)
@@ -51,17 +54,18 @@ function CanvasScene:update(dt)
         local mx, my = love.mouse.getPosition()
         local cx, cy = WINDOW_WIDTH / 2 - size / 2 - size, WINDOW_HEIGHT / 2 - size / 2
         local x, y = mx - cx, my - cy
+
+        love.graphics.setColor(1, 1, 1, 1)
+
+        love.graphics.setCanvas(canvas)
         if mode == 'paint' then
-            love.graphics.setCanvas(canvas)
+            --
             love.graphics.draw(brush, x, y, 0, CURSOR_SCALE, CURSOR_SCALE)
-            love.graphics.setCanvas()
         elseif mode == 'clean' then
-            love.graphics.setCanvas(canvas)
             love.graphics.setBlendMode('subtract')
-            love.graphics.setColor(1,1,1,1)
             love.graphics.draw(brush, x, y, 0, CURSOR_SCALE, CURSOR_SCALE)
-            love.graphics.setCanvas()
         end
+        love.graphics.setCanvas()
     end
 end
 
@@ -74,21 +78,25 @@ function CanvasScene:keypressed(key)
 end
 
 function CanvasScene:draw()
-    love.graphics.setColor(1, 1, 1, 1)
+    local blendMode = love.graphics.getBlendMode()
+    local r, g, b, a = love.graphics.getColor()
 
-    love.graphics.setBlendMode('alpha', 'premultiplied')
+    love.graphics.setBlendMode('add')
     love.graphics.draw(canvas, WINDOW_WIDTH / 2 - size / 2 - size, WINDOW_HEIGHT / 2 - size / 2)
     
     love.graphics.setBlendMode('alpha')
     love.graphics.draw(canvas, WINDOW_WIDTH / 2 - size / 2, WINDOW_HEIGHT / 2 - size / 2)
  
-    love.graphics.setBlendMode('alpha')
-    love.graphics.setColor(1, 0, 0, 0.5)
+    love.graphics.setBlendMode('subtract')
+    love.graphics.setColor(1, 1, 1, 0.5)
     love.graphics.draw(canvas, WINDOW_WIDTH / 2 - size / 2 + size, WINDOW_HEIGHT / 2 - size / 2)
+
+    love.graphics.setBlendMode(blendMode)
+    love.graphics.setColor(r, g, b, a)
 
     -- render cursor
     local x, y = love.mouse.getPosition()
-    love.graphics.setColor(CURSOR_COLOR)
+    love.graphics.setColor(mode == 'paint' and CURSOR_COLOR_PAINT or CURSOR_COLOR_CLEAN)
     love.graphics.draw(brush, x, y, 0, CURSOR_SCALE, CURSOR_SCALE)
 end
 
