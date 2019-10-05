@@ -1,5 +1,6 @@
 local MainScene = require('scenes/MainScene')
 local CanvasScene = require('scenes/CanvasScene')
+local StencilScene = require('scenes/StencilScene')
 local PaintScene = require('scenes/PaintScene')
 local CollisionsScene = require('scenes/CollisionsScene')
 
@@ -10,6 +11,7 @@ local index = 1
 local scenes = { 
     MainScene,
     CanvasScene,
+    StencilScene,
     PaintScene,
     CollisionsScene
 }
