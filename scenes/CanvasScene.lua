@@ -2,6 +2,7 @@ local CanvasScene = {}
 
 local plateCanvas
 local dirtCanvas
+local cleanCanvas
 local brush
 local plate
 local size
@@ -14,21 +15,21 @@ local CURSOR_SCALE = 3
 function CanvasScene:load(config)
     config.title = 'canvas'
     
-    -- love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setColor(1, 1, 1, 1)
 
     plate = love.graphics.newImage('assets/plate128.png')
     brush = love.graphics.newImage('assets/brush8.png')
     size = plate:getWidth()
     plateCanvas = love.graphics.newCanvas(size, size)
     dirtCanvas = love.graphics.newCanvas(size, size)
+    cleanCanvas = love.graphics.newCanvas(size, size)
 
     love.mouse.setVisible(false)
     love.mouse.setGrabbed(true)
 
     love.graphics.setCanvas(plateCanvas)
-        love.graphics.clear()
-        love.graphics.setBlendMode('alpha')
-        love.graphics.draw(plate, 0, 0, 0, 1, 1)
+    love.graphics.setBlendMode('alpha')
+    love.graphics.draw(plate)
     love.graphics.setCanvas()
 end
 
@@ -40,15 +41,17 @@ function CanvasScene:update(dt)
 
         -- love.graphics.setColor(1, 1, 1, 1)
 
-        love.graphics.setCanvas(dirtCanvas)
         if mode == 'paint' then
+            love.graphics.setCanvas(dirtCanvas)
             love.graphics.setBlendMode('add')
             love.graphics.draw(brush, x, y, 0, CURSOR_SCALE, CURSOR_SCALE)
+            love.graphics.setCanvas()
         elseif mode == 'clean' then
+            love.graphics.setCanvas(cleanCanvas)
             love.graphics.setBlendMode('subtract')
             love.graphics.draw(brush, x, y, 0, CURSOR_SCALE, CURSOR_SCALE)
+            love.graphics.setCanvas()
         end
-        love.graphics.setCanvas()
     end
 end
 
@@ -61,25 +64,18 @@ function CanvasScene:keypressed(key)
 end
 
 function CanvasScene:draw()
-    local blendMode = love.graphics.getBlendMode()
-    local r, g, b, a = love.graphics.getColor()
 
-    love.graphics.setBlendMode('add')
     love.graphics.draw(plateCanvas, WINDOW_WIDTH / 2 - size / 2 - size, WINDOW_HEIGHT / 2 - size / 2)
-    
-    love.graphics.setBlendMode('alpha')
-    love.graphics.draw(plateCanvas, WINDOW_WIDTH / 2 - size / 2, WINDOW_HEIGHT / 2 - size / 2)
- 
-    love.graphics.setBlendMode('subtract')
-    -- love.graphics.setColor(1, 1, 1, 0.5)
-    love.graphics.draw(plateCanvas, WINDOW_WIDTH / 2 - size / 2 + size, WINDOW_HEIGHT / 2 - size / 2)
+    love.graphics.draw(dirtCanvas, WINDOW_WIDTH / 2 - size / 2 - size, WINDOW_HEIGHT / 2 - size / 2)
+    love.graphics.draw(cleanCanvas, WINDOW_WIDTH / 2 - size / 2 - size, WINDOW_HEIGHT / 2 - size / 2)
 
-    love.graphics.setBlendMode(blendMode)
-    -- love.graphics.setColor(r, g, b, a)
+    love.graphics.draw(plateCanvas, WINDOW_WIDTH / 2 - size / 2, WINDOW_HEIGHT / 2 - size / 2)
+
+    love.graphics.draw(plateCanvas, WINDOW_WIDTH / 2 - size / 2 + size, WINDOW_HEIGHT / 2 - size / 2)
 
     -- render cursor
     local x, y = love.mouse.getPosition()
-    -- love.graphics.setColor(mode == 'paint' and CURSOR_COLOR_PAINT or CURSOR_COLOR_CLEAN)
+    love.graphics.setColor(mode == 'paint' and CURSOR_COLOR_PAINT or CURSOR_COLOR_CLEAN)
     love.graphics.draw(brush, x, y, 0, CURSOR_SCALE, CURSOR_SCALE)
 end
 

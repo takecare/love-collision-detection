@@ -59,19 +59,45 @@ function Box:render()
 
     love.graphics.setColor(self.collision.top.colliding and YELLOW or self.edgeColor)
     if self.collision.top.colliding then
-        -- love.graphics.rectangle('fill', self.collision.top.xStart, self.collision.top.yStart, self.collision.top.xEnd - self.collision.top.xStart, self.edgeThickness)
+        love.graphics.rectangle(
+            'fill',
+            self.collision.top.xStart,
+            self.collision.top.yStart,
+            self.collision.top.xEnd - self.collision.top.xStart,
+            self.edgeThickness
+        )
     end
     if self.collision.left.colliding then
-        -- love.graphics.rectangle('fill', self.collision.left.xStart , self.collision.left.yStart, self.edgeThickness, self.collision.left.yEnd - self.collision.left.yStart)
+        love.graphics.rectangle(
+            'fill',
+            self.collision.left.xStart ,
+            self.collision.left.yStart,
+            self.edgeThickness,
+            self.collision.left.yEnd - self.collision.left.yStart
+    )
     end
     if self.collision.bottom.colliding then
-        -- love.graphics.rectangle('fill', self.collision.bottom.xStart, self.collision.bottom.yStart, self.collision.bottom.xEnd - self.collision.bottom.xStart, self.edgeThickness)
+        love.graphics.rectangle(
+            'fill',
+            self.collision.bottom.xStart,
+            self.collision.bottom.yStart - self.edgeThickness,
+            self.collision.bottom.xEnd - self.collision.bottom.xStart,
+            self.edgeThickness
+        )
     end
     if self.collision.right.colliding then
-        love.graphics.rectangle('fill', self.collision.right.xStart , self.collision.right.yStart, self.edgeThickness, self.collision.right.yEnd - self.collision.right.yStart)
+        love.graphics.rectangle(
+            'fill',
+            self.collision.right.xStart - self.edgeThickness,
+            self.collision.right.yStart,
+            self.edgeThickness,
+            self.collision.right.yEnd - self.collision.right.yStart
+        )
     end
 
-    love.graphics.print(self.title, self.x + self.edgeThickness, self.y + self.edgeThickness)
+    love.graphics.print(self.title,
+    self.x + self.edgeThickness,
+    self.y + self.edgeThickness)
 end
 
 function Box:update(dt)
