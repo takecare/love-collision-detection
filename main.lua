@@ -42,7 +42,7 @@ function loadScene()
     love.graphics.reset()
     love.mouse.setVisible(true)
     love.mouse.setGrabbed(false)
-    scenes[index]:load(config) -- bad: param is also exit/return value
+    scenes[index]:load(config) -- bad: config param is both exit & return value
     love.window.setTitle(config.title)
 end
 
@@ -59,9 +59,9 @@ end
 function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
-    elseif key == '1' then
+    elseif key == ']' then
         nextScene()
-    elseif key == '2' then
+    elseif key == '[' then
         previousScene()
     else
         scenes[index]:keypressed(key)

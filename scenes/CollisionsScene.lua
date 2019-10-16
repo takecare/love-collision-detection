@@ -41,6 +41,11 @@ function Box:new(x, y, w, h, color)
     return setmetatable(box, Box)
 end
 
+function Box:isColliding()
+    return self.collision.top.colliding or self.collision.left.colliding
+        or self.collision.right.colliding or self.collision.bottom.colliding
+end
+
 function Box:render()
     love.graphics.setColor(self.color)
     love.graphics.rectangle('fill', self.x, self.y, self.w, self.h)
@@ -95,9 +100,11 @@ function Box:render()
         )
     end
 
-    love.graphics.print(self.title,
-    self.x + self.edgeThickness,
-    self.y + self.edgeThickness)
+    love.graphics.print(
+        self.title,
+        self.x + self.edgeThickness,
+        self.y + self.edgeThickness
+    )
 end
 
 function Box:update(dt)
@@ -178,8 +185,6 @@ function Box:collidesWith(other)
             self.collision.top.xStart = otherMinX
             self.collision.top.xEnd = maxX
             self.title = 'TR'
-        else
-            self.title = ''
         end
     end
 
@@ -203,8 +208,6 @@ function Box:collidesWith(other)
             self.collision.left.yStart = maxY
             self.collision.left.yEnd = otherMinY
             self.title = 'LB'
-        else
-            self.title = ''
         end
     end
 
@@ -228,8 +231,6 @@ function Box:collidesWith(other)
             self.collision.bottom.xStart = otherMinX
             self.collision.bottom.xEnd = maxX
             self.title = 'BR'
-        else
-            self.title = ''
         end
     end
 
@@ -253,9 +254,11 @@ function Box:collidesWith(other)
             self.collision.right.yStart = maxY
             self.collision.right.yEnd = otherMinY
             self.title = 'RB'
-        else
-            self.title = ''
         end
+    end
+
+    if not self:isColliding() then
+        self.title = ''
     end
 end
 
