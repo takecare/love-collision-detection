@@ -169,19 +169,19 @@ function Box:collidesWith(other)
         self.collision.top.yStart = minY
         self.collision.top.yEnd = minY
 
-        if minX < otherMinX and maxX > otherMaxX then  -- smaller width
+        if minX < otherMinX and maxX > otherMaxX then  -- other has smaller width
             self.collision.top.xStart = otherMinX
             self.collision.top.xEnd = otherMaxX
             self.title = 'Tsw'
-        elseif minX > otherMinX and maxX < otherMaxX then -- greater width
+        elseif minX > otherMinX and maxX < otherMaxX then -- other has greater width
             self.collision.top.xStart = minX
             self.collision.top.xEnd = maxX
             self.title = 'Tgw'
-        elseif minX < otherMaxX and minX > otherMinX then -- left
+        elseif minX < otherMaxX and minX > otherMinX then -- other on the left
             self.collision.top.xStart = minX
             self.collision.top.xEnd = otherMaxX
             self.title = 'TL'
-        elseif maxX < otherMaxX and maxX > otherMinX then -- right
+        elseif maxX < otherMaxX and maxX > otherMinX then -- other on the right
             self.collision.top.xStart = otherMinX
             self.collision.top.xEnd = maxX
             self.title = 'TR'
@@ -192,19 +192,19 @@ function Box:collidesWith(other)
         self.collision.left.xStart = minX
         self.collision.left.xEnd = minX
 
-        if minY < otherMinY and maxY > otherMaxY then -- smaller height
+        if minY < otherMinY and maxY > otherMaxY then -- other has smaller height
             self.collision.left.yStart = otherMinY
             self.collision.left.yEnd = otherMaxY
             self.title = 'Lsh'
-        elseif minY > otherMinY and maxY < otherMaxY then -- greater height
+        elseif minY > otherMinY and maxY < otherMaxY then -- other has greater height
             self.collision.left.yStart = minY
             self.collision.left.yEnd = maxY
             self.title = 'Lgh'
-        elseif minY > otherMinY and minY < otherMaxY then -- top
+        elseif minY > otherMinY and minY < otherMaxY then -- other on the top
             self.collision.left.yStart = minY
             self.collision.left.yEnd = otherMaxY
             self.title = 'LT'
-        elseif maxY > otherMinY and maxY < otherMaxY then -- bottom
+        elseif maxY > otherMinY and maxY < otherMaxY then -- other on the bottom
             self.collision.left.yStart = maxY
             self.collision.left.yEnd = otherMinY
             self.title = 'LB'
